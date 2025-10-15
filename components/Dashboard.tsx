@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sensor } from '../types';
+import SensorIcon from './SensorIcon';
 
 interface DashboardProps {
   sensors: Sensor[];
@@ -38,29 +39,38 @@ const Dashboard: React.FC<DashboardProps> = ({ sensors, searchTerm, onSearchChan
       {/* Scrollable Sensor List */}
       <div className="flex-1 min-h-0 overflow-y-auto border-t border-gray-200 -mx-4 px-4 pt-2">
          {sensors.length > 0 ? (
-          <ul className="space-y-1">
+          <ul className="space-y-2 py-1">
             {sensors.map(sensor => (
               <li key={sensor.id}>
                 <button
                   onClick={() => onSensorSelect(sensor)}
-                  className={`w-full text-left p-3 rounded-md transition-colors duration-150 ${
-                    selectedSensorId === sensor.id
-                      ? 'bg-ineco-blue text-white shadow'
-                      : 'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-ineco-blue'
+                  className={`w-full text-left p-3 rounded-lg border transition-all duration-200 flex items-center space-x-3 relative overflow-hidden ${
+                    selectedSensorId === sensor.id 
+                      ? 'bg-ineco-blue text-white border-ineco-blue shadow-lg' 
+                      : 'bg-white border-gray-200 hover:border-ineco-blue hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-ineco-blue'
                   }`}
                   aria-current={selectedSensorId === sensor.id ? 'true' : 'false'}
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold text-sm">{sensor.name}</p>
-                      <p className={`text-xs ${
-                        selectedSensorId === sensor.id ? 'text-gray-200' : 'text-gray-500'
-                      }`}>{sensor.pk_location}</p>
-                    </div>
-                     <div className={`text-xs text-right ${ selectedSensorId === sensor.id ? 'text-gray-300' : 'text-gray-400'}`}>
+                  {/* Colored bar for Linea */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${sensor.linea === 40 ? 'bg-ineco-red' : 'bg-ineco-blue'}`}></div>
+                  
+                  {/* Icon */}
+                  <div className={`flex-shrink-0 p-2 rounded-full ${selectedSensorId === sensor.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+                      <SensorIcon className={`w-5 h-5 ${selectedSensorId === sensor.id ? 'text-white' : 'text-ineco-blue'}`} />
+                  </div>
+
+                  {/* Text content */}
+                  <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{sensor.name}</p>
+                      <p className={`text-xs ${selectedSensorId === sensor.id ? 'text-gray-200' : 'text-gray-600'}`}>
+                          {sensor.pk_location}
+                      </p>
+                  </div>
+                  
+                  {/* Right-aligned info */}
+                  <div className={`text-xs text-right pr-1 flex-shrink-0 ${ selectedSensorId === sensor.id ? 'text-gray-300' : 'text-gray-500'}`}>
                       <p>Línea: {sensor.linea}</p>
                       <p>Vía: {sensor.via}</p>
-                    </div>
                   </div>
                 </button>
               </li>

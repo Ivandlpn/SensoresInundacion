@@ -6,4 +6,6 @@ export interface Sensor {
   type: string;
   linea: number;
   via: number;
+  maintenanceBase: string;
+  associatedCamera?: string | string[];
 }

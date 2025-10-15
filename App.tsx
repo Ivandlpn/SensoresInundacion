@@ -6,7 +6,11 @@ import SensorDetailPanel from './components/SensorDetailPanel';
 import Footer from './components/Footer';
 import CsiModal from './components/CsiModal';
 import SystemOperationModal from './components/SystemOperationModal';
+import CameraModal from './components/CameraModal';
+import SensorTypeModal from './components/SensorTypeModal';
 import { getSensors } from './services/sensorService';
+import { getCameraImageUrl } from './services/cameraService';
+import { getSensorTypeImageUrl } from './services/sensorTypeService';
 import { Sensor } from './types';
 
 // Se extiende la interfaz global Window para incluir el objeto 'L' de Leaflet.
@@ -31,10 +35,11 @@ const PdfIcon = () => (
 );
 
 const documentationFiles = [
-    { name: 'IE 161229 Detector Inundación BM Req.pdf', url: 'https://ivandlpn.github.io/-Aplicaciones-Sensores/archivos/IE%20161229%20Detector%20Inundaci%C3%B3n%20BM%20Req.pdf' },
-    { name: 'IT-141010-Detector de inundacionLAV.pdf', url: 'https://ivandlpn.github.io/-Aplicaciones-Sensores/archivos/IT-141010-Detector%20de%20inundacionLAV.pdf' },
-    { name: 'ITV.151109-PROYECTO.DETECCION.INUNDACION.ALBALI.PK369.V1.0.pdf', url: 'https://ivandlpn.github.io/-Aplicaciones-Sensores/archivos/ITV.151109-PROYECTO.DETECCION.INUNDACION.ALBALI.PK369.V1.0.pdf' },
-    { name: 'PM220322_PROCEDIMIENTO SENSOR INUNDACION CSI_V1.0.pdf', url: 'https://ivandlpn.github.io/-Aplicaciones-Sensores/archivos/PM220322_PROCEDIMIENTO%20SENSOR%20INUNDACION%20CSI_V1.0.pdf' }
+    { name: 'IE 161229 Detector Inundación BM Req.pdf', url: 'https://ivandlpn.github.io/SensoresInundacion/Documentacion/IE%20161229%20Detector%20Inundaci%C3%B3n%20BM%20Req.pdf' },
+    { name: 'IT-141010-Detector de inundacionLAV.pdf', url: 'https://ivandlpn.github.io/SensoresInundacion/Documentacion/IT-141010-Detector%20de%20inundacionLAV.pdf' },
+    { name: 'ITV.151109-PROYECTO.DETECCION.INUNDACION.ALBALI.PK369.V1.0.pdf', url: 'https://ivandlpn.github.io/SensoresInundacion/Documentacion/ITV.151109-PROYECTO.DETECCION.INUNDACION.ALBALI.PK369.V1.0.pdf' },
+    { name: 'Informe Instalación Sensores de inundación.pdf', url: 'https://ivandlpn.github.io/SensoresInundacion/Documentacion/Informe%20%20Instalaci%C3%B3n%20Sensores%20de%20inundaci%C3%B3n.pdf' },
+    { name: 'PM220322_PROCEDIMIENTO SENSOR INUNDACION CSI_V1.0.pdf', url: 'https://ivandlpn.github.io/SensoresInundacion/Documentacion/PM220322_PROCEDIMIENTO%20SENSOR%20INUNDACION%20CSI_V1.0.pdf' }
 ];
 
 const DocumentationModal: React.FC<DocumentationModalProps> = ({ isOpen, onClose }) => {
@@ -108,20 +113,35 @@ const DocumentationModal: React.FC<DocumentationModalProps> = ({ isOpen, onClose
 
 
 const App: React.FC = () => {
-  const [sensors, setSensors] = useState<Sensor[] | null>(null);
+  const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isCsiModalOpen, setIsCsiModalOpen] = useState(false);
   const [isSystemOperationModalOpen, setIsSystemOperationModalOpen] = useState(false);
-  const [isDocumentationModalOpen, setIsDocumentationModalOpen] = useState(false); // Nuevo estado
+  const [isDocumentationModalOpen, setIsDocumentationModalOpen] = useState(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [selectedCamera, setSelectedCamera] = useState<{ name: string; url: string } | null>(null);
+  const [isSensorTypeModalOpen, setIsSensorTypeModalOpen] = useState(false);
+  const [selectedSensorType, setSelectedSensorType] = useState<{ name: string; url: string } | null>(null);
 
   useEffect(() => {
-    const initialSensors = getSensors();
-    setSensors(initialSensors);
+    const loadSensorData = async () => {
+      try {
+        const sensorData = await getSensors();
+        setSensors(sensorData);
+      } catch (error) {
+        console.error("Error al cargar los datos de los sensores:", error);
+        // Opcional: mostrar un mensaje de error al usuario
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSensorData();
   }, []);
   
   const initialBounds = useMemo(() => {
-    if (!sensors || sensors.length === 0 || !window.L) return undefined;
+    if (sensors.length === 0 || !window.L) return undefined;
     // Utiliza la utilidad de Leaflet para crear un objeto de límites a partir de las localizaciones de los sensores.
     return window.L.latLngBounds(sensors.map(s => s.location));
   }, [sensors]);
@@ -130,10 +150,28 @@ const App: React.FC = () => {
     setSelectedSensor(sensor);
   }, []);
 
+  const handleOpenCameraModal = async (cameraName: string) => {
+    const imageUrl = await getCameraImageUrl(cameraName);
+    if (imageUrl) {
+      setSelectedCamera({ name: cameraName, url: imageUrl });
+      setIsCameraModalOpen(true);
+    } else {
+      alert(`No se pudo encontrar la imagen para la cámara: ${cameraName}`);
+    }
+  };
+
+  const handleOpenSensorTypeModal = (sensorType: string) => {
+    const imageUrl = getSensorTypeImageUrl(sensorType);
+    if (imageUrl) {
+        setSelectedSensorType({ name: sensorType, url: imageUrl });
+        setIsSensorTypeModalOpen(true);
+    } else {
+        console.warn(`No se ha encontrado una imagen para el tipo de sensor: ${sensorType}`);
+    }
+  };
+
   // Filter sensors based on the search term matching pk_location, name, linea or via
   const filteredSensors = useMemo(() => {
-    if (!sensors) return []; // Devuelve un array vacío si los sensores aún no se han cargado
-    
     const lowercasedSearchTerm = searchTerm.toLowerCase();
     if (!lowercasedSearchTerm) {
       return sensors;
@@ -155,7 +193,7 @@ const App: React.FC = () => {
   }, [filteredSensors, selectedSensor, handleSensorSelect]);
 
   // Muestra un estado de carga hasta que los sensores y los límites iniciales estén disponibles.
-  if (!sensors || !initialBounds) {
+  if (isLoading) {
     return (
       <div className="flex flex-col h-screen bg-white text-ineco-dark-gray font-sans">
         <Header />
@@ -178,7 +216,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white text-ineco-dark-gray font-sans max-w-[92%] mx-auto shadow-2xl">
+    <div className="flex flex-col h-full bg-white/70 backdrop-blur-md text-ineco-dark-gray font-sans max-w-[92%] mx-auto shadow-2xl rounded-xl border border-white/30 overflow-hidden">
       <Header />
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
         <main className="flex-1 relative h-1/2 md:h-full">
@@ -189,12 +227,14 @@ const App: React.FC = () => {
             selectedSensorId={selectedSensor?.id ?? null} 
           />
         </main>
-        <aside className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 bg-white border-t md:border-t-0 md:border-l border-gray-200 h-1/2 md:h-full shadow-lg z-20">
+        <aside className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 bg-white/50 border-t md:border-t-0 md:border-l border-gray-200/50 h-1/2 md:h-full shadow-lg z-20">
           <div className="p-4 h-full overflow-y-auto flex flex-col">
             {selectedSensor ? (
               <SensorDetailPanel 
                 sensor={selectedSensor} 
-                onClose={() => handleSensorSelect(null)} 
+                onClose={() => handleSensorSelect(null)}
+                onOpenCameraModal={handleOpenCameraModal}
+                onOpenSensorTypeModal={handleOpenSensorTypeModal}
               />
             ) : (
               <Dashboard 
@@ -216,6 +256,22 @@ const App: React.FC = () => {
       <CsiModal isOpen={isCsiModalOpen} onClose={() => setIsCsiModalOpen(false)} />
       <SystemOperationModal isOpen={isSystemOperationModalOpen} onClose={() => setIsSystemOperationModalOpen(false)} />
       <DocumentationModal isOpen={isDocumentationModalOpen} onClose={() => setIsDocumentationModalOpen(false)} />
+      {isCameraModalOpen && selectedCamera && (
+          <CameraModal
+              isOpen={isCameraModalOpen}
+              onClose={() => setIsCameraModalOpen(false)}
+              cameraName={selectedCamera.name}
+              imageUrl={selectedCamera.url}
+          />
+      )}
+      {isSensorTypeModalOpen && selectedSensorType && (
+        <SensorTypeModal
+            isOpen={isSensorTypeModalOpen}
+            onClose={() => setIsSensorTypeModalOpen(false)}
+            sensorTypeName={selectedSensorType.name}
+            imageUrl={selectedSensorType.url}
+        />
+      )}
     </div>
   );
 };

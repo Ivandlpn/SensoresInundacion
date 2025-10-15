@@ -1,0 +1,80 @@
+
+[
+  {
+    "id": "sensor-001",
+    "name": "Túnel de Huerta de Colas",
+    "pk_location": "Pk 289+800",
+    "linea": 40,
+    "via": 1,
+    "location": [39.5275, -1.551388888888889],
+    "type": "Honeywell 470-12",
+    "maintenanceBase": "BM Requena",
+    "associatedCamera": "A6V_T_289,79_CF01"
+  },
+  {
+    "id": "sensor-002",
+    "name": "Túnel Rabosera",
+    "pk_location": "Pk 346+650",
+    "linea": 40,
+    "via": 1,
+    "location": [39.45986111111111, -0.9304722222222222],
+    "type": "Honeywell 470-12",
+    "maintenanceBase": "BM Requena",
+    "associatedCamera": "Pendiente de asignar"
+  },
+  {
+    "id": "sensor-003",
+    "name": "Túnel La Cabrera",
+    "pk_location": "Pk 351+350",
+    "linea": 40,
+    "via": 1,
+    "location": [39.46169444444444, -0.87625],
+    "type": "SLB Systems Water Sensor",
+    "maintenanceBase": "BM Requena",
+    "associatedCamera": "Pendiente de asignar"
+  },
+  {
+    "id": "sensor-004",
+    "name": "Desmonte Chiva",
+    "pk_location": "Pk 374+300",
+    "linea": 40,
+    "via": 2,
+    "location": [39.473611111111114, -0.6194166666666667],
+    "type": "Honeywell 470-12",
+    "maintenanceBase": "BM Requena",
+    "associatedCamera": "Pendiente de asignar"
+  },
+  {
+    "id": "sensor-005",
+    "name": "Caseta Túnel Torrente",
+    "pk_location": "Pk 389+200",
+    "linea": 40,
+    "via": 2,
+    "location": [39.449305555555555, -0.45455555555555555],
+    "type": "Honeywell 470-12",
+    "maintenanceBase": "BM Requena",
+    "associatedCamera": "A6V_T_389,17_DM1"
+  },
+  {
+    "id": "sensor-006",
+    "name": "PICV 329",
+    "pk_location": "Pk 329+138",
+    "linea": 42,
+    "via": 2,
+    "location": [38.95, -1.7790555555555556],
+    "type": "SLB Systems Water Sensor",
+    "maintenanceBase": "BM Gabaldón",
+    "associatedCamera": "6AA_P_3291_DM1"
+  },
+  {
+    "id": "sensor-007",
+    "name": "Bonete",
+    "pk_location": "Pk 368+950",
+    "linea": 42,
+    "via": 1,
+    "location": [38.90544444444445, -1.3791388888888888],
+    "type": "Honeywell 470-12",
+    "maintenanceBase": "BM Monforte",
+    "associatedCamera": ["6AA_P_3689_CF01", "6AA_P_3689_CF02"]
+  }
+]

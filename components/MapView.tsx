@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Sensor } from '../types';
 import { getLine40Coordinates, getLine42Coordinates } from '../services/lineData';
@@ -368,13 +368,27 @@ const ResetViewControl: React.FC<{ sensors: Sensor[]; onSensorSelect: (sensor: S
 // Componente para renderizar la línea ferroviaria 40
 const RailwayLineLayer: React.FC = () => {
   const map = useMap();
+  const [coordinates, setCoordinates] = useState<[number, number][]>([]);
 
   useEffect(() => {
+    const fetchLineData = async () => {
+        try {
+            const coords = await getLine40Coordinates();
+            setCoordinates(coords);
+        } catch (error) {
+            console.error("Error al cargar datos de la línea 40:", error);
+        }
+    };
+    fetchLineData();
+  }, []);
+
+  useEffect(() => {
+    if (coordinates.length === 0) return;
+    
     const L = window.L;
     if (!L) return;
 
-    const lineCoordinates = getLine40Coordinates();
-    const polyline = L.polyline(lineCoordinates, {
+    const polyline = L.polyline(coordinates, {
       color: '#FF0000', // Color rojo brillante para máxima visibilidad
       weight: 4,
       opacity: 0.8,
@@ -387,7 +401,7 @@ const RailwayLineLayer: React.FC = () => {
     return () => {
       map.removeLayer(polyline);
     };
-  }, [map]);
+  }, [map, coordinates]);
 
   return null; // No renderiza nada directamente en React
 };
@@ -395,13 +409,27 @@ const RailwayLineLayer: React.FC = () => {
 // Componente para renderizar la línea ferroviaria 42
 const RailwayLineLayer42: React.FC = () => {
   const map = useMap();
+  const [coordinates, setCoordinates] = useState<[number, number][]>([]);
 
   useEffect(() => {
+      const fetchLineData = async () => {
+          try {
+              const coords = await getLine42Coordinates();
+              setCoordinates(coords);
+          } catch (error) {
+              console.error("Error al cargar datos de la línea 42:", error);
+          }
+      };
+      fetchLineData();
+  }, []);
+
+  useEffect(() => {
+    if (coordinates.length === 0) return;
+
     const L = window.L;
     if (!L) return;
 
-    const lineCoordinates = getLine42Coordinates();
-    const polyline = L.polyline(lineCoordinates, {
+    const polyline = L.polyline(coordinates, {
       color: '#1A4488', // Color azul oscuro (ineco-blue)
       weight: 4,
       opacity: 0.8,
@@ -414,13 +442,18 @@ const RailwayLineLayer42: React.FC = () => {
     return () => {
       map.removeLayer(polyline);
     };
-  }, [map]);
+  }, [map, coordinates]);
 
   return null; // No renderiza nada directamente en React
 };
 
 
 const MapView: React.FC<MapViewProps> = ({ sensors, initialBounds, onSensorSelect, selectedSensorId }) => {
+  // Solo renderiza el MapContainer si los límites iniciales están definidos
+  if (!initialBounds) {
+    return null; // O un componente de carga si se prefiere
+  }
+  
   return (
     <MapContainer 
       bounds={initialBounds}
