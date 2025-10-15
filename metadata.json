@@ -1,0 +1,5 @@
+{
+  "name": "Ubicación de Sensores LAV Este v1",
+  "description": "Aplicación geoespacial interactiva para visualizar la ubicación e información de los sensores de inundación en la línea de alta velocidad (LAV) Este.",
+  "requestFramePermissions": []
+}
